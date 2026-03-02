@@ -27,10 +27,15 @@ Version 0.0.1
 pip install -r requirements.txt
 ```
 
+## Compiling to .exe
+```
+pyinstaller --onefile --windowed main.py
+```
+
 ## Usage
 
 ```bash
-python main.py
+python main.py or dist/main.exe if compiled to .exe
 ```
 
 1. Click **Browse...** to select your PDF file
