@@ -29,7 +29,7 @@ pip install -r requirements.txt
 
 ## Compiling to .exe
 ```
-pyinstaller --onefile --windowed main.py
+pyinstaller --onefile --windowed main.py or pyinstaller --onefile --windowed main_ru.py
 ```
 
 ## Usage
