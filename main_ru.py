@@ -19,8 +19,8 @@ except ImportError:
 class PDFCraftApp:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("PDF Craft v0.0.1")
-        self.root.geometry("560x520")
+        self.root.title("PDF Craft v1.0.2")
+        self.root.geometry("610x520")
         self.root.resizable(True, True)
 
         self.pdf_path = tk.StringVar()
@@ -34,6 +34,9 @@ class PDFCraftApp:
         self.compress_output_path = tk.StringVar()
         self.compress_streams = tk.BooleanVar(value=True)
         self.compress_duplicates = tk.BooleanVar(value=False)
+        self.remove_page_input_path = tk.StringVar()
+        self.remove_page_output_path = tk.StringVar()
+        self.remove_page_list = tk.StringVar(value="1, 2")
 
         self._build_ui()
 
@@ -54,7 +57,7 @@ class PDFCraftApp:
         ttk.Entry(file_frame, textvariable=self.pdf_path).grid(row=0, column=0, sticky=tk.EW, padx=(0, 5))
         ttk.Button(file_frame, text="Обзор...", command=self._browse_pdf).grid(row=0, column=1)
 
-        ttk.Label(split_tab, text="Конечная папка:").grid(row=2, column=0, sticky=tk.W, pady=(0, 5))
+        ttk.Label(split_tab, text="Конечный файл:").grid(row=2, column=0, sticky=tk.W, pady=(0, 5))
         out_frame = ttk.Frame(split_tab)
         out_frame.grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=(0, 15))
         out_frame.columnconfigure(0, weight=1)
@@ -124,7 +127,7 @@ class PDFCraftApp:
         ttk.Button(btn_frame, text="Выше выбранный", command=self._join_move_up).pack(side=tk.LEFT, padx=(0, 5))
         ttk.Button(btn_frame, text="Ниже выбранный", command=self._join_move_down).pack(side=tk.LEFT)
 
-        ttk.Label(join_tab, text="Исходный файл:").grid(row=3, column=0, sticky=tk.W, pady=(0, 5))
+        ttk.Label(join_tab, text="Конечный файл:").grid(row=3, column=0, sticky=tk.W, pady=(0, 5))
         out_file_frame = ttk.Frame(join_tab)
         out_file_frame.grid(row=4, column=0, columnspan=2, sticky=tk.EW, pady=(0, 15))
         out_file_frame.columnconfigure(0, weight=1)
@@ -145,7 +148,7 @@ class PDFCraftApp:
         compress_tab = ttk.Frame(notebook, padding=15)
         notebook.add(compress_tab, text="Сжать PDF")
 
-        ttk.Label(compress_tab, text="PDF файлы:").grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
+        ttk.Label(compress_tab, text="PDF-файлы:").grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
         comp_in_frame = ttk.Frame(compress_tab)
         comp_in_frame.grid(row=1, column=0, columnspan=2, sticky=tk.EW, pady=(0, 15))
         compress_tab.columnconfigure(0, weight=1)
@@ -154,7 +157,7 @@ class PDFCraftApp:
         ttk.Entry(comp_in_frame, textvariable=self.compress_input_path).grid(row=0, column=0, sticky=tk.EW, padx=(0, 5))
         ttk.Button(comp_in_frame, text="Обзор...", command=self._compress_browse_input).grid(row=0, column=1)
 
-        ttk.Label(compress_tab, text="Исходный файл:").grid(row=2, column=0, sticky=tk.W, pady=(0, 5))
+        ttk.Label(compress_tab, text="Конечный файл:").grid(row=2, column=0, sticky=tk.W, pady=(0, 5))
         comp_out_frame = ttk.Frame(compress_tab)
         comp_out_frame.grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=(0, 15))
         comp_out_frame.columnconfigure(0, weight=1)
@@ -182,6 +185,40 @@ class PDFCraftApp:
         ttk.Button(compress_tab, text="Сжать PDF", command=self._compress_pdf).grid(
             row=7, column=0, columnspan=2, pady=(10, 0)
         )
+
+        # === Remove page ===
+        remove_page = ttk.Frame(notebook, padding=15)
+        notebook.add(remove_page, text="Удалить страницу из PDF")
+
+        ttk.Label(remove_page, text="PDF-файл:").grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
+        file_frame = ttk.Frame(remove_page)
+        file_frame.grid(row=1, column=0, columnspan=2, sticky=tk.EW, pady=(0, 15))
+        remove_page.columnconfigure(0, weight=1)
+        file_frame.columnconfigure(0, weight=1)
+
+        ttk.Entry(file_frame, textvariable=self.remove_page_input_path).grid(row=0, column=0, sticky=tk.EW, padx=(0, 5))
+        ttk.Button(file_frame, text="Обзор...", command=self._browse_remove_pdf).grid(row=0, column=1)
+
+        ttk.Label(remove_page, text="Конечный файл:").grid(row=2, column=0, sticky=tk.W, pady=(0, 5))
+        out_frame = ttk.Frame(remove_page)
+        out_frame.grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=(0, 15))
+        out_frame.columnconfigure(0, weight=1)
+
+        ttk.Entry(out_frame, textvariable=self.remove_page_output_path).grid(row=0, column=0, sticky=tk.EW, padx=(0, 5))
+        ttk.Button(out_frame, text="Обзор...", command=self._browse_remove_output).grid(row=0, column=1)
+
+        page_remove_list = ttk.Frame(remove_page)
+        page_remove_list.grid(row=5, column=0, columnspan=2, sticky=tk.W, pady=(0, 10))
+        
+        remove_page_frame = ttk.Frame(page_remove_list)
+        remove_page_frame.pack(anchor=tk.W, padx=(0, 0))
+        ttk.Label(remove_page_frame, text="Номера страниц через запятую:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Entry(remove_page_frame, textvariable=self.remove_page_list, width=25).pack(side=tk.LEFT)
+
+        ttk.Button(remove_page, text="Удалить страницы", command=self._remote_pdf_page).grid(
+            row=7, column=0, columnspan=2, pady=(10, 0)
+        )
+
 
     def _browse_pdf(self):
         path = filedialog.askopenfilename(
@@ -359,13 +396,13 @@ class PDFCraftApp:
         output_dir = self.output_dir.get().strip()
 
         if not pdf_path:
-            messagebox.showerror("Error", "Please select a PDF file.")
+            messagebox.showerror("Error", "Пожалуйста, выберите PDF-file.")
             return
         if not Path(pdf_path).exists():
-            messagebox.showerror("Error", f"File not found: {pdf_path}")
+            messagebox.showerror("Error", f"Файл не найден: {pdf_path}")
             return
         if not output_dir:
-            messagebox.showerror("Error", "Please select an output folder.")
+            messagebox.showerror("Error", "Пожалуйста, выберите конечную папку.")
             return
 
         Path(output_dir).mkdir(parents=True, exist_ok=True)
@@ -429,6 +466,7 @@ class PDFCraftApp:
             self.status_var.set(f"Writing part {file_num} (pages {start + 1}-{end})...")
             self.root.update_idletasks()
             file_num += n
+
     def _extract_specific_pages(self, reader, output_dir, base_name, total_pages, page_nums):
         """Extract only the specified pages, each as its own PDF file."""
         for i, page_num in enumerate(page_nums):
@@ -439,6 +477,81 @@ class PDFCraftApp:
                 writer.write(f)
             self.status_var.set(f"Extracting page {page_num} ({i + 1}/{len(page_nums)})...")
             self.root.update_idletasks()
+
+
+    def _browse_remove_pdf(self):
+        path = filedialog.askopenfilename(
+            title="Select PDF",
+            filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")]
+        )
+        if path:
+            self.remove_page_input_path.set(path)
+            if not self.remove_page_output_path.get():
+                self.remove_page_output_path.set(str(Path(path).parent))
+
+    def _browse_remove_output(self):
+        path = filedialog.askdirectory(title="Select Output Folder")
+        if path:
+            self.remove_page_output_path.set(path)
+
+    def _remote_pdf_page(self):
+        # remove specified pages from a PDF and write resulting file
+        input_path = self.remove_page_input_path.get().strip()
+        output_path = self.remove_page_output_path.get().strip()
+
+        if not input_path:
+            messagebox.showerror("Error", "Пожалуйста, выберите PDF-файл.")
+            return
+        if not Path(input_path).exists():
+            messagebox.showerror("Error", f"Файл не найден: {input_path}")
+            return
+        if not output_path:
+            messagebox.showerror("Error", "Пожалуйста, выберите конечную папку.")
+            return
+
+        Path(output_path).mkdir(parents=True, exist_ok=True)
+        base_name = Path(input_path).stem
+
+        try:
+            reader = PdfReader(input_path)
+            total_pages = len(reader.pages)
+        except Exception as e:
+            messagebox.showerror("Error", f"Невозможно открыть PDF: {e}")
+            return
+
+        try:
+            # parse the list of pages to remove
+            remove_pages = [int(x.strip()) for x in self.remove_page_list.get().split(",") if x.strip()]
+            remove_pages = sorted(set(p for p in remove_pages if 1 <= p <= total_pages))
+
+            if not remove_pages:
+                raise ValueError(f"Введите номера страниц (1–{total_pages}) для удаления")
+
+            # determine pages to keep
+            keep_pages = [i for i in range(1, total_pages + 1) if i not in remove_pages]
+            if not keep_pages:
+                raise ValueError("Невозможно удалить все страницы, результат будет пустым.")
+
+            writer = PdfWriter()
+            for num in keep_pages:
+                writer.add_page(reader.pages[num - 1])
+
+            removed_str = "_".join(str(p) for p in remove_pages)
+            out_file = Path(output_path) / f"{base_name}_without_{removed_str}.pdf"
+
+            self.status_var.set("Запись файла...")
+            self.root.update_idletasks()
+            with open(out_file, "wb") as f:
+                writer.write(f)
+
+            messagebox.showinfo("Success", f"Страницы удалены: {removed_str}\nРезультат: {out_file}")
+            self.status_var.set("Готово")
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
+            return
+        except Exception as e:
+            messagebox.showerror("Error", f"Удаление страниц невозможно: {e}")
+            return
 
     def run(self):
         self.root.mainloop()
