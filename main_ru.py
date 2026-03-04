@@ -19,7 +19,7 @@ except ImportError:
 class PDFCraftApp:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("PDF Craft v0.0.1")
+        self.root.title("PDF Craft v1.0.2")
         self.root.geometry("610x520")
         self.root.resizable(True, True)
 
@@ -495,11 +495,12 @@ class PDFCraftApp:
             self.remove_page_output_path.set(path)
 
     def _remote_pdf_page(self):
+        # remove specified pages from a PDF and write resulting file
         input_path = self.remove_page_input_path.get().strip()
         output_path = self.remove_page_output_path.get().strip()
 
         if not input_path:
-            messagebox.showerror("Error", "Пожалуйста, выберите PDF-file.")
+            messagebox.showerror("Error", "Пожалуйста, выберите PDF-файл.")
             return
         if not Path(input_path).exists():
             messagebox.showerror("Error", f"Файл не найден: {input_path}")
@@ -507,7 +508,7 @@ class PDFCraftApp:
         if not output_path:
             messagebox.showerror("Error", "Пожалуйста, выберите конечную папку.")
             return
-        
+
         Path(output_path).mkdir(parents=True, exist_ok=True)
         base_name = Path(input_path).stem
 
@@ -515,40 +516,41 @@ class PDFCraftApp:
             reader = PdfReader(input_path)
             total_pages = len(reader.pages)
         except Exception as e:
-            messagebox.showerror("Error", f"Невозможно открыть данный PDF: {e}")
+            messagebox.showerror("Error", f"Невозможно открыть PDF: {e}")
             return
 
         try:
-            pages = [int(x.strip()) for x in self.remove_page_list.get().split(",") if x.strip()]
-            page_nums = []
+            # parse the list of pages to remove
+            remove_pages = [int(x.strip()) for x in self.remove_page_list.get().split(",") if x.strip()]
+            remove_pages = sorted(set(p for p in remove_pages if 1 <= p <= total_pages))
 
-            for i in range(1, total_pages+1):
-                if i in pages:
-                    continue
-                else:
-                    page_nums.append(i)
+            if not remove_pages:
+                raise ValueError(f"Введите номера страниц (1–{total_pages}) для удаления")
 
-            if not page_nums:
-                    raise ValueError(f"Введите номера страниц (1–{total_pages})")
-            
-            for i, page_num in enumerate(page_nums):
-                writer = PdfWriter()
-                writer.add_page(reader.pages[page_num - 1])
-                out_path = Path(output_path) / f"{base_name}_page_{page_nums}.pdf"
+            # determine pages to keep
+            keep_pages = [i for i in range(1, total_pages + 1) if i not in remove_pages]
+            if not keep_pages:
+                raise ValueError("Невозможно удалить все страницы, результат будет пустым.")
 
-                for j, pdf_path in enumerate(self.join_files):
+            writer = PdfWriter()
+            for num in keep_pages:
+                writer.add_page(reader.pages[num - 1])
 
-                with open(out_path, "wb") as f:
-                    writer.write(f)
-                self.status_var.set("Страницы удалены...") #f"Extracting page {page_num} ({i + 1}/{len(page_nums)})...")
-                self.root.update_idletasks()
+            removed_str = "_".join(str(p) for p in remove_pages)
+            out_file = Path(output_path) / f"{base_name}_without_{removed_str}.pdf"
 
+            self.status_var.set("Запись файла...")
+            self.root.update_idletasks()
+            with open(out_file, "wb") as f:
+                writer.write(f)
 
+            messagebox.showinfo("Success", f"Страницы удалены: {removed_str}\nРезультат: {out_file}")
+            self.status_var.set("Готово")
         except ValueError as e:
             messagebox.showerror("Error", str(e))
             return
         except Exception as e:
-            messagebox.showerror("Error", f"Удаление страницы невозможно: {e}")
+            messagebox.showerror("Error", f"Удаление страниц невозможно: {e}")
             return
 
     def run(self):
