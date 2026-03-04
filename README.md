@@ -1,7 +1,7 @@
 # PDF Craft 
 
 A Python GUI application to split, join, and compress PDF files.
-Version 0.0.1
+Version 1.0.2
 
 ## Features
 
@@ -29,7 +29,7 @@ pip install -r requirements.txt
 
 ## Compiling to .exe
 ```
-pyinstaller --onefile --windowed main.py or pyinstaller --onefile --windowed main_ru.py
+`pyinstaller --onefile --windowed main.py` or `pyinstaller --onefile --windowed main_ru.py`
 ```
 
 ## Usage
@@ -46,4 +46,11 @@ python main.py or dist/main.exe if compiled to .exe
 ## Requirements
 
 - Python 3.8+
+- altgraph
+- packaging
+- pefile
+- pyinstaller
+- pyinstaller-hooks-contrib
 - pypdf
+- pywin32-ctypes
+- setuptools 
